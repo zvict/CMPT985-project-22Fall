@@ -1,0 +1,12 @@
+**/__pycache__
+data/
+log/
+**/figs
+*.png
+*.jpg
+*.jpeg
+*.pth
+*.pt
+*.out
+*.mp4
+*.tar.gz

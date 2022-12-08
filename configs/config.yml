@@ -1,0 +1,261 @@
+index: "mvc3ntdp-7-attnT3-txL1H1-KQ30l0V23l0-Nsample64-RGB-txEmbed-ebdL5"
+train: true
+seed: 1
+dataset:
+  cam_world: 'world'
+  type: "synthetic"
+  normalize_norm: false
+  bg_norm_cam_coord: []
+  # bg_norm_cam_coord: [0, 0, 1]
+  white_bg: true
+  path: "/home/zvictys/projects/rrg-keli/zvictys/papr/data/nerf_synthetic/lego/train/"
+  factor: 4
+  batch_size: 1
+  num_workers: 0
+  shuffle: true
+  extract_patch: true
+  patches:
+    type: "continuous" # "random"
+    height: 50
+    width: 50
+    overlap: 10
+    max_patches: -1
+  rays:
+    focal_factor: 0.6
+    cam_world: 'world'
+geoms:
+  near: 4
+  num_sample: 64
+  points:
+    load_path: "experiments/mvc3n-1stattnM37/coords.pt"
+    init_type: "sphere"
+    init_scale: [0.8, 0.8, 0.8]
+    init_center: [0.0, 0.0, 0.0]
+    num: 100
+    cam_world: 'world'
+    eval_idxs: [12, 32, 77, 85, 87]
+  point_norms:
+    # load_path: "experiments/mvc3n-1stattnM37/norms.pt"
+    load_path: ""
+    cam_world: 'world'
+  point_feats:
+    # load_path: "experiments/mvc3n-1stattnM37/feats.pt"
+    load_path: ""
+    dim: 32
+models:
+  # path: "experiments/mvc3ntdp-3-overlap20-attnT3-txL4H4-valT2/model.pth"
+  path: ""
+  use_attn_mlp: true
+  out_fuse_type: 1
+  use_renderer: false
+  attn_fn:
+    type: 1
+    cpd: 1
+    cd2r: 1
+    crni: 1.0e-5
+    csig: 100
+  attn_mlp:
+    type: 3
+    attn_L: 6
+    num_layers: 3
+    dim: 256
+    act: "leakyrelu"
+    last_act: "none"
+    use_wn: true
+  norm_mlp:
+    type: 1
+    out_type: "rgb"
+    num_layers: 3
+    dim: 256
+    act: "relu"
+    last_act: "none"
+    use_wn: false
+    out_dim: 3
+  transformer:
+    type: "embed"
+    share_embed: false
+    ray_embed_type: 2
+    normalize_pd: false
+    kq_type: 30
+    kq_L: 0
+    value_type: 23
+    value_L: 0
+    num_layers: 1
+    num_heads: 1
+    dim: 256
+    ff_dim: 256
+    dropout: 0
+    use_mask: false
+    temp: 1.0
+    vtemp: 1.0
+    norm: "layernorm"
+    residual: true
+    residual_embed: false
+    d_ff_embed: 256
+    n_ff_layer_embed: 5
+    ff_act_embed: "relu"
+    dropout_embed: 0
+    norm_embed: "layernorm"
+    concat: false
+    n_ff_layer: 2
+    ff_act: "relu"
+    act_a_embed: 1.0
+    act_b_embed: 1.0
+    act_a_ff: 1.0
+    act_b_ff: 1.0
+  renderer:
+    max_height: 50
+    max_width: 100
+    attn_method: 1
+    with_bgp: false
+    sfts: [0.5, 4, -2]
+    feature:
+      use_feat_mlp: false
+      dim: 128
+      init_scale: 1
+      positive: false
+    generator:
+      type: "unet"
+      unet:
+        num_layers: 4
+        n_midchannels: 128
+        bilinear: true
+        use_bn: false
+        pooling: "avg"
+        use_gated: true
+        last_act: "tanh"
+      imrrdb:
+        code_dim: 0
+        residual_dim: 64
+        dense_dim: 64
+        num_blocks: 6
+        act: "leakyrelu"
+        up: "nearest"
+        feat_scales: 1
+        use_wn: true
+        map_dim: 0
+        ks_fea_conv: 3
+        ks_rb_blocks: 3
+        ks_lr_conv: 3
+        ks_out_conv: 3
+        ks_up_blocks: 3
+    mvc:
+      normalize_x2v: true
+      normalize_x2vprime: false
+      x2vprime_method: 2
+      attn_2nd:
+        type: 9
+        sigmoid_bias: 0.01
+        inner_temp: 1000
+        Cdr2pl: 40
+        Cdpr2x: 20
+        Cdvp2x: 1
+        C2ndattn: 1
+      neighbor_method: 1
+      lr_method: 1
+      mat_exp:
+        approx: true
+        type: 2
+        order: 5
+        temp: 0.5
+      background_p:
+        type: 4
+        inner_temp: 1000
+      w:
+        w_L: 0
+        type: 9
+        Cw: 0
+        num_layers: 3
+        dim: 128
+        act: "leakyrelu"
+        last_act: "softplus"
+        use_wn: true
+      matq_method: 1
+      use_x_loss: false
+      mvc_weight_method: 1
+training:
+  chunk_steps: 250000
+  steps: 250000
+  losses:
+    mse: 1.0
+    lpips: 1.0e-2
+  lr:
+    norm_mlp:
+      type: "cosine"
+      base_lr: 3.0e-4
+      factor: 1
+      warmup: 5000
+      weight_decay: 0
+    attn_mlp:
+      type: "cosine"
+      base_lr: 3.0e-4
+      factor: 1
+      warmup: 5000
+      weight_decay: 0
+    transformer:
+      type: "cosine"
+      base_lr: 3.0e-4
+      factor: 1
+      warmup: 5000
+      weight_decay: 0
+    # points: 1.0e-3
+    points: 0.0
+    # norms: 1.0e-3
+    norms: 0.0
+    feats: 1.0e-3
+    w_mlp: 1.0e-3
+    generator:
+      type: "none"
+      base_lr: 1.0e-4
+      factor: 1
+      warmup: 5000
+      weight_decay: 0
+    mvc:
+      # Cdr2pl: 1.0e-3
+      # Cdpr2x: 1.0e-3
+      # Cdvp2x: 1.0e-3
+      # C2ndattn: 1.0e-3
+      # Cw: 1.0e-3
+      Cdr2pl: 0
+      Cdpr2x: 0
+      Cdvp2x: 0
+      C2ndattn: 0
+      Cw: 0
+eval:
+  dataset:
+    name: "testset"
+    extract_patch: false
+    type: "synthetic"
+    white_bg: true
+    path: "/home/zvictys/projects/rrg-keli/zvictys/papr/data/nerf_synthetic/lego/test/"
+    factor: 4
+    num_workers: 0
+  step: 20
+  img_idx: 0
+  max_height: 20
+  max_width: 20
+  save_fig: true
+test:
+  load_path: ""
+  max_height: 50
+  max_width: 100
+  datasets:
+    - name: "testset"
+      extract_patch: false
+      type: "synthetic"
+      white_bg: true
+      path: "/home/zvictys/projects/rrg-keli/zvictys/papr/data/nerf_synthetic/lego/test/"
+      factor: 4
+      num_workers: 0
+    # - name: "testset2"
+    #   extract_patch: false
+    #   type: "synthetic-norm"
+    #   white_bg: true
+    #   path: "/home/zvictys/projects/rrg-keli/zvictys/papr/data/nerf_synthetic/lego-normal/test/"
+    #   factor: 4
+    #   num_workers: 0
+  use_gt_norms: false
+  plots:
+    pcrgb: true
+    vnormattn: true
+    txoutput: true
